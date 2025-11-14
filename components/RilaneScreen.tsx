@@ -1,96 +1,44 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { GoogleGenAI, Chat } from "@google/genai";
-import { ChatMessage } from '../types';
+import React from 'react';
 
+// Esta é a nova tela da Rilane, que não é mais um chat.
+// É uma página de "card" que leva para o seu agente externo do ChatGPT.
 const RilaneScreen: React.FC = () => {
-  const [chat, setChat] = useState<Chat | null>(null);
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const [input, setInput] = useState('');
-  const [loading, setLoading] = useState(false);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    try {
-      const ai = new GoogleGenAI({ apiKey: process.env.API_KEY! });
-      const newChat = ai.chats.create({
-        model: 'gemini-2.5-flash',
-        config: {
-          systemInstruction: "Você é Rilane, uma psicóloga IA gentil e compassiva. Seu objetivo é ajudar o usuário a navegar pela ansiedade com técnicas de TCC, calma e neurociência. Suas respostas devem ser curtas e diretas ao ponto, como em um chat.",
-        },
-      });
-      setChat(newChat);
-      setMessages([{ sender: 'rilane', text: 'Olá! Como posso te ajudar a encontrar um pouco mais de calma hoje?' }]);
-    } catch (error) {
-      console.error("Failed to initialize Gemini AI:", error);
-      setMessages([{ sender: 'rilane', text: 'Desculpe, não consegui me conectar. Verifique a configuração da sua chave de API.' }]);
-    }
-  }, []);
-
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
-
-  useEffect(scrollToBottom, [messages]);
-
-  const handleSend = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!input.trim() || loading || !chat) return;
-
-    const userMessage: ChatMessage = { sender: 'user', text: input };
-    setMessages(prev => [...prev, userMessage]);
-    setInput('');
-    setLoading(true);
-
-    try {
-      const result = await chat.sendMessage({ message: input });
-      const response = result;
-      const rilaneMessage: ChatMessage = { sender: 'rilane', text: response.text };
-      setMessages(prev => [...prev, rilaneMessage]);
-    } catch (error) {
-      console.error("Gemini API error:", error);
-      const errorMessage: ChatMessage = { sender: 'rilane', text: 'Sinto muito, ocorreu um erro ao processar sua mensagem.' };
-      setMessages(prev => [...prev, errorMessage]);
-    } finally {
-      setLoading(false);
-    }
+  
+  // 1. Defina o título, imagem e link do seu agente aqui
+  const agentData = {
+    title: "Rilane IA",
+    description: "Clique abaixo para abrir nossa conversa em uma nova janela e começar sua jornada de autoconhecimento.",
+    // Você pode trocar esta imagem por uma sua no futuro
+    imageUrl: "https://placehold.co/600x400/A185D7/FFFFFF?text=Rilane+IA&font=inter", 
+    // ⚠️ Este é o seu link do ChatGPT que você mandou
+    agentUrl: "https://chatgpt.com/g/g-69173970d124819181cff75ab0a8c19f-psicologa-rilane-mente-calma" 
   };
 
   return (
-    <div className="flex flex-col h-[calc(100vh-4rem)] bg-white">
-        <header className="bg-[#A185D7] p-4 text-white text-center shadow-md">
-            <h1 className="text-xl font-bold">Conversar com Rilane</h1>
-        </header>
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        {messages.map((msg, index) => (
-          <div key={index} className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
-            <div className={`max-w-xs md:max-w-md lg:max-w-lg px-4 py-2 rounded-2xl ${msg.sender === 'user' ? 'bg-[#4A2C6B] text-white rounded-br-none' : 'bg-gray-200 text-[#4A2C6B] rounded-bl-none'}`}>
-              <p>{msg.text}</p>
-            </div>
-          </div>
-        ))}
-        {loading && (
-          <div className="flex justify-start">
-            <div className="bg-gray-200 text-[#4A2C6B] rounded-2xl rounded-bl-none px-4 py-2">
-              <span className="animate-pulse">Digitando...</span>
-            </div>
-          </div>
-        )}
-        <div ref={messagesEndRef} />
+    <div className="flex flex-col h-[calc(100vh-4rem)] bg-gray-100 p-4 sm:p-8 items-center">
+      {/* Header */}
+      <header className="bg-white p-4 text-center shadow-md rounded-lg mb-6 w-full max-w-md">
+        <h1 className="text-2xl font-bold text-[#4A2C6B]">Sua Psicóloga IA</h1>
+      </header>
+
+      {/* Card do Agente */}
+      <div className="bg-white rounded-2xl shadow-lg overflow-hidden max-w-md w-full mx-auto transform transition-all duration-300 hover:scale-[1.02] hover:shadow-xl">
+        <img src={agentData.imageUrl} alt={agentData.title} className="w-full h-56 object-cover" />
+        
+        <div className="p-6 text-center">
+          <h2 className="text-2xl font-bold text-[#4A2C6B] mb-3">{agentData.title}</h2>
+          <p className="text-gray-600 mb-6">{agentData.description}</p>
+          
+          <a
+            href={agentData.agentUrl}
+            target="_blank" // Abre em uma nova aba
+            rel="noopener noreferrer"
+            className="inline-block bg-[#4A2C6B] text-white font-bold py-3 px-8 rounded-lg shadow-lg hover:bg-[#A185D7] transition-all duration-300 text-lg"
+          >
+            Começar a Conversar
+          </a>
+        </div>
       </div>
-      <form onSubmit={handleSend} className="p-4 bg-white border-t border-gray-200 flex items-center">
-        <input
-          type="text"
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          placeholder="Digite sua mensagem..."
-          className="flex-1 px-4 py-2 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-[#A185D7]"
-          disabled={loading}
-          aria-label="Sua mensagem"
-        />
-        <button type="submit" disabled={loading || !input.trim()} className="ml-3 bg-[#4A2C6B] text-white p-2.5 rounded-full disabled:bg-gray-400 hover:bg-[#A185D7] transition-all duration-300">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
-        </button>
-      </form>
     </div>
   );
 };
