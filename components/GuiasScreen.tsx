@@ -74,7 +74,9 @@ const premiumGuidesData: PremiumGuide[] = [
 ];
 
 // O resto do arquivo (a parte que mostra o PDF)
-const PdfViewerModal: React.FC<{ pdfUrl: string; onClose: () => void }> = ({ pdfUrl, onClose }) = (
+// ⚠️ AQUI ESTAVA O ERRO! (Linha 77)
+// Eu troquei o "=" por "=>"
+const PdfViewerModal: React.FC<{ pdfUrl: string; onClose: () => void }> = ({ pdfUrl, onClose }) => (
     <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-2 sm:p-4">
         <div className="bg-white rounded-lg w-full h-full max-w-4xl max-h-[95vh] flex flex-col">
             <div className="flex justify-between items-center p-3 border-b">
@@ -152,4 +154,4 @@ const GuiasScreen: React.FC = () => {
   );
 };
 
-export default GuiasScreen;
+export default GuiasScreen;een;
